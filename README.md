@@ -14,12 +14,12 @@
     
   - 計1478の特徴量から296個を選択
 
-### 2. 予測モデル
+### 2. モデル
   - LightGBM
     - 深さを変えた３種類のモデルを使用
     - 12folds, 3seeds average
 
-### 3. プログラムの実行
+### 3. 実行手順
 ```
 #言語判定モデルのダウンロード
 wget -P ./data/ https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin 
