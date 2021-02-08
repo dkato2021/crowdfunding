@@ -202,12 +202,12 @@ train_x, test_x = df[:len(train_y)], df[len(train_y):].reset_index(drop=True)
 
 # ---------------------------------------------------------------------------------------------------------------------------------------- #
 NAME = "LightGBM001"
-FOLDS, seeds= 2, [0]
+FOLDS, seeds= 12, [0,1,2]
 omit = .8
 # define model
 LBGM_params = {
-    "n_estimators": 10,
-    "learning_rate": 1,
+    "n_estimators": int(1e+5),
+    "learning_rate": 1e-2,
     "num_leaves": 31,
     
     'colsample_bytree': .5, #=feature_fraction
@@ -293,5 +293,3 @@ sub = sample_sub.copy()
 sub[1] = labels
 sub = sub.astype(int)
 sub.to_csv(os.path.join(config.SUBMISSION , f"sub_{RUN_NAME}.csv"), index=False, header=True)
-
-
