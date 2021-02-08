@@ -1,4 +1,4 @@
-## 【学生限定】SIGNATE 22卒インターン選考コンペティション 15th place solution
+## SIGNATE 22卒インターン選考コンペティション 15th place solution
 ### 1. 特徴量
   - html content
     - 前処理なし,textのみなどの前処理をして以下の特徴量を作成
@@ -18,4 +18,3 @@
   - LightGBM
     - 深さを変えた３種類のモデルをアンサンブル
     - 12folds, 3seeds average
-### 3.プログラムの実行
