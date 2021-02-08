@@ -21,6 +21,9 @@
 
 ### 3. プログラムの実行
 ```
+#言語判定モデルのダウンロード
 wget -P ./data/ https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin 
+
+#実行
 . ./run.sh
 ```
