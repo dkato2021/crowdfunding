@@ -255,12 +255,12 @@ train_y = pd.read_csv(os.path.join(config.INPUT, "train.csv"))['state']
 train_x, test_x = df[:len(train_y)], df[len(train_y):].reset_index(drop=True)
 
 NAME = "LightGBM001"
-FOLDS, seeds= 2, [0]
+FOLDS, seeds= 12, [0,1,2]
 omit = .8
 # define model
 LBGM_params = {
-    "n_estimators": 10,
-    "learning_rate": 1,
+    "n_estimators": int(1e+5),
+    "learning_rate": 1e-2,
     "num_leaves": 31,
     
     'colsample_bytree': .5, #=feature_fraction
@@ -293,12 +293,12 @@ oof[NAME]=model.predict_cv()
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 
 NAME = "LightGBM002"
-FOLDS, seeds= 2, [0]
+FOLDS, seeds= 12, [0,1,2]
 omit = .8
 # define model
 LBGM_params = {
-    "n_estimators": 10,
-    "learning_rate": 1,
+    "n_estimators": int(1e+5),
+    "learning_rate": 1e-2,
     "num_leaves": 16,
     
     'colsample_bytree': .5, #=feature_fraction
@@ -328,12 +328,12 @@ oof[NAME]=model.predict_cv()
 
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 NAME = "LightGBM003"
-FOLDS, seeds= 2, [0]
+FOLDS, seeds= 12, [0,1,2]
 omit = .75
 # define model
 LBGM_params = {
-    "n_estimators": 10,
-    "learning_rate": 1,
+    "n_estimators": int(1e+5),
+    "learning_rate": 1e-2,
     "num_leaves": 48,
     
     'colsample_bytree': .5, #=feature_fraction
@@ -360,7 +360,6 @@ pd.DataFrame(selected_cols).to_csv(os.path.join(config.OUTPUT, f"{NAME}_selected
 
 model.train_x, model.test_x = model.train_x[selected_cols], model.test_x[selected_cols]
 
-
 oof[NAME]=model.predict_cv()
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 
@@ -368,4 +367,3 @@ best_weight, best_threshold, f1 = get_best(train_y, oof)
 best=list(best_weight)
 best.append(best_threshold)
 pd.DataFrame(best).to_csv(os.path.join(config.OUTPUT, f"{RUN_NAME}_best.csv"), index=False, header=True)
-
