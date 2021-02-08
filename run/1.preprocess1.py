@@ -1,33 +1,6 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-def seed_everything(seed=2021):
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-    #tf.random.set_seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-
-
-# In[2]:
-
-
-def worker_init_fn(worker_id):                                                          
-    np.random.seed(np.random.get_state()[1][0] + worker_id)
-
-
-# In[3]:
-
-
 import os 
 import re
 import random
-from time import time
 import warnings
 import sys
 sys.path.append('../')
@@ -38,14 +11,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-#import tensorflow as tf
 import torch
 from torch import optim
 from torch.utils.data import TensorDataset, random_split
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from transformers import BertTokenizer, BertForSequenceClassification ,  get_linear_schedule_with_warmup
 from transformers import  RobertaModel, RobertaTokenizer
-#import keras
 
 import texthero as hero
 from bs4 import BeautifulSoup
@@ -53,17 +24,23 @@ from fasttext import load_model
 
 from mypipe.config import Config
 
-# GPUが使えれば利用する設定
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-#device = torch.device("cpu")
-seed_everything(seed=2021)
 
+def seed_everything(seed=2021):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    #tf.random.set_seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+
+def worker_init_fn(worker_id):                                                          
+    np.random.seed(np.random.get_state()[1][0] + worker_id)
+
+seed_everything(seed=2021)
 RUN_NAME = "exp00"
 config = Config(RUN_NAME, folds=5)
-
-
-# In[4]:
-
 
 def sigmoid(z):
     return 1.0 / (1.0 + np.exp(-z))
@@ -86,10 +63,6 @@ def optimized_f1(y_true, y_pred):
     bt = threshold_optimization(y_true, y_pred, metrics=f1_score)
     score = f1_score(y_true, y_pred >= bt)
     return score
-
-
-# In[5]:
-
 
 def get_langID(input_df):
     #文章の抽出
@@ -128,10 +101,6 @@ def hero_rough(input_df, text_col):
     ]
     texts = hero.clean(input_df[text_col], custom_pipeline)
     return texts
-
-
-# In[6]:
-
 
 def get_Engdataloader(texts, y_labels, tokenizer):
     seed_everything(seed=2021)
@@ -178,10 +147,6 @@ def get_Engdataloader(texts, y_labels, tokenizer):
 
     return dataloader
 
-
-# In[7]:
-
-
 def get_multidataloader(texts, y_labels, tokenizer):
     seed_everything(seed=2021)
     input_ids, attention_masks = [], []
@@ -226,10 +191,6 @@ def get_multidataloader(texts, y_labels, tokenizer):
                 )
     return dataloader
 
-
-# In[8]:
-
-
 def finetuning(dataloader, model, max_epoch = 1):
     seed_everything(seed=2021)  
     optimizer = optim.AdamW(model.parameters(), lr=2e-5, eps=1e-8) # Default epsilon value)
@@ -264,10 +225,6 @@ def finetuning(dataloader, model, max_epoch = 1):
         model = train(model)
 
     return model
-
-
-# In[9]:
-
 
 def get_engBERT(input_df, 
             text_columns, EngID,
@@ -312,10 +269,6 @@ def get_engBERT(input_df,
             
     return output_df
 
-
-# In[10]:
-
-
 def get_multiBERT(input_df, 
             text_columns, multiID,
             name="",
@@ -358,10 +311,6 @@ def get_multiBERT(input_df,
             
     return output_df
 
-
-# In[11]:
-
-
 def get_fineBERTALL(input_df):
     multiID, EngID = get_langID(input_df)
     multi = get_multiBERT(input_df, ["html_content"] ,multiID, name='rough', hero=hero_rough,
@@ -372,42 +321,12 @@ def get_fineBERTALL(input_df):
     output_df1=pd.concat([eng, multi], axis=0); output_df1=output_df1.sort_index()
     return output_df1
 
-
-# In[12]:
-
-
-# html_content 含めた特徴量作成
-def get_process_funcs():
-    funcs = [
-        get_BERTALL
-    ]
-    return funcs
-
-def to_feature(input_df, funcs):
-    output_df = pd.DataFrame()
-    for func in funcs :       #tqdm(funcs, total=len(funcs)):
-        _df = func(input_df)
-        #assert len(_df) == len(input_df), func.__name__
-        output_df = pd.concat([output_df, _df], axis=1)
-
-    return output_df
-
-
-# In[14]:
-
-
 ## preprocessin
 train = pd.read_csv(os.path.join(config.INPUT, "train.csv"))
 test = pd.read_csv(os.path.join(config.INPUT, "test.csv"))
 input_df = pd.concat([train, test]).reset_index(drop=True)
 y_labels = pd.read_csv(os.path.join(config.INPUT, "train.csv"))['state']
 
-output_df1 = get_fineBERTALL(input_df)
-output_df1.to_csv(os.path.join(config.OUTPUT, "rough_fineBERT.csv"), index=False, header=True)
-
-
-# In[ ]:
-
-
-
+output_df = get_fineBERTALL(input_df)
+output_df.to_csv(os.path.join(config.OUTPUT, "rough_fineBERT.csv"), index=False, header=True)
 
