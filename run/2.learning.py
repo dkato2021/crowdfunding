@@ -1,53 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-def seed_everything(seed=2021):
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-
-
-# In[14]:
-
-
-def reduce_mem_usage(df, verbose=True):
-    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-    start_mem = df.memory_usage().sum() / 1024**2
-    for col in df.columns:
-        col_type = df[col].dtypes
-        if col_type in numerics:
-            c_min = df[col].min()
-            c_max = df[col].max()
-            if str(col_type)[:3] == 'int':
-                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
-                    df[col] = df[col].astype(np.int8)
-                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
-                    df[col] = df[col].astype(np.int16)
-                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
-                    df[col] = df[col].astype(np.int32)
-                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
-                    df[col] = df[col].astype(np.int64)
-            else:
-                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
-                    df[col] = df[col].astype(np.float16)
-                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
-                    df[col] = df[col].astype(np.float32)
-                else:
-                    df[col] = df[col].astype(np.float64)
-
-    end_mem = df.memory_usage().sum() / 1024**2
-    #print('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
-    #print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
-
-    return df
-
-
-# In[3]:
-
-
 import os 
 import re
 import random
@@ -81,25 +31,53 @@ import xgboost as xgb
 import re
 from bs4 import BeautifulSoup
 from fasttext import load_model
+def seed_everything(seed=2021):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+
 seed_everything(seed=2021)
 from mypipe.config import Config
 #seed_everything(seed=2021)
 RUN_NAME = "exp00"
 config = Config(RUN_NAME, folds=5)
 
+def reduce_mem_usage(df, verbose=True):
+    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+    start_mem = df.memory_usage().sum() / 1024**2
+    for col in df.columns:
+        col_type = df[col].dtypes
+        if col_type in numerics:
+            c_min = df[col].min()
+            c_max = df[col].max()
+            if str(col_type)[:3] == 'int':
+                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                    df[col] = df[col].astype(np.int8)
+                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
+                    df[col] = df[col].astype(np.int16)
+                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
+                    df[col] = df[col].astype(np.int32)
+                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
+                    df[col] = df[col].astype(np.int64)
+            else:
+                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
+                    df[col] = df[col].astype(np.float16)
+                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                    df[col] = df[col].astype(np.float32)
+                else:
+                    df[col] = df[col].astype(np.float64)
 
-# In[4]:
+    end_mem = df.memory_usage().sum() / 1024**2
+    #print('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
+    #print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
 
+    return df
 
 # fold ごとの index を返す関数を定義
 def make_skf(train_x, train_y, random_state=2021):
     skf = StratifiedKFold(n_splits=FOLDS, shuffle=True, random_state=random_state)
     folds_idx = [(t, v) for (t, v) in skf.split(train_x, train_y)]
     return folds_idx
-
-
-# In[5]:
-
 
 # visualize result
 def visualize_confusion_matrix(y_true,
@@ -125,10 +103,6 @@ def visualize_confusion_matrix(y_true,
     plt.show()
     return fig
 
-
-# In[6]:
-
-
 # 最適な閾値を求める関数
 def threshold_optimization(y_true, y_pred, metrics=None):
     seed_everything(seed=2021)
@@ -149,10 +123,6 @@ def optimized_f1(y_true, y_pred):
     score = f1_score(y_true, y_pred >= bt)
     return score
 
-
-# In[7]:
-
-
 def get_best(y_true, y_pred):
     def wight_opt(x):
         y_preds = np.average(list(y_pred.values()), axis=0, weights=x)
@@ -169,10 +139,6 @@ def get_best(y_true, y_pred):
     bt=threshold_optimization(y_true, np.average(list(y_pred.values()), axis=0, weights=best_weight), metrics=f1_score)
     f1 = optimized_f1(y_true, np.average(list(y_pred.values()), axis=0, weights=best_weight))
     return best_weight, bt, f1
-
-
-# In[8]:
-
 
 # LGBMModel の wrapper
 class MyLGBMModel:
@@ -271,10 +237,6 @@ class MyLGBMModel:
         score = self.metrics(y_true, y_pred)
         return score
 
-
-# In[9]:
-
-
 table = pd.read_csv(os.path.join(config.INPUT, "processed_table.csv"))
 basic = pd.read_csv(os.path.join(config.INPUT, "html_basic.csv"))
 SVD = pd.read_csv(os.path.join(config.INPUT, "svd128.csv"))
@@ -291,12 +253,6 @@ df=reduce_mem_usage(pd.concat([
 ###
 train_y = pd.read_csv(os.path.join(config.INPUT, "train.csv"))['state']
 train_x, test_x = df[:len(train_y)], df[len(train_y):].reset_index(drop=True)
-
-
-# # modeling
-
-# In[10]:
-
 
 NAME = "LightGBM001"
 FOLDS, seeds= 2, [0]
@@ -334,10 +290,7 @@ model.train_x, model.test_x = model.train_x[selected_cols], model.test_x[selecte
 # train & inference
 oof={}
 oof[NAME]=model.predict_cv()
-
-
-# In[11]:
-
+# --------------------------------------------------------------------------------------------------------------------------------------- #
 
 NAME = "LightGBM002"
 FOLDS, seeds= 2, [0]
@@ -360,7 +313,7 @@ model = MyLGBMModel(name=NAME, params=LBGM_params, fold=make_skf,
                     train_x=train_x, train_y=train_y, test_x=test_x, metrics=optimized_f1, 
                     seeds=seeds
                    )
-#'''
+
 # feature importance
 importance_df = model.tree_importance()
 
@@ -371,17 +324,9 @@ selected_cols = cols[:selected_num]
 pd.DataFrame(selected_cols).to_csv(os.path.join(config.OUTPUT, f"{NAME}_selected_cols.csv"), index=False, header=True)
 
 model.train_x, model.test_x = model.train_x[selected_cols], model.test_x[selected_cols]
-#'''
-
-
-# train & inference
-
 oof[NAME]=model.predict_cv()
 
-
-# In[12]:
-
-
+# --------------------------------------------------------------------------------------------------------------------------------------- #
 NAME = "LightGBM003"
 FOLDS, seeds= 2, [0]
 omit = .75
@@ -403,7 +348,7 @@ model = MyLGBMModel(name=NAME, params=LBGM_params, fold=make_skf,
                     train_x=train_x, train_y=train_y, test_x=test_x, metrics=optimized_f1, 
                     seeds=seeds
                    )
-#'''
+
 # feature importance
 importance_df = model.tree_importance()
 
@@ -414,37 +359,13 @@ selected_cols = cols[:selected_num]
 pd.DataFrame(selected_cols).to_csv(os.path.join(config.OUTPUT, f"{NAME}_selected_cols.csv"), index=False, header=True)
 
 model.train_x, model.test_x = model.train_x[selected_cols], model.test_x[selected_cols]
-#'''
 
-
-# train & inference
 
 oof[NAME]=model.predict_cv()
-
-
-# In[13]:
-
+# --------------------------------------------------------------------------------------------------------------------------------------- #
 
 best_weight, best_threshold, f1 = get_best(train_y, oof)
 best=list(best_weight)
 best.append(best_threshold)
 pd.DataFrame(best).to_csv(os.path.join(config.OUTPUT, f"{RUN_NAME}_best.csv"), index=False, header=True)
-
-
-# In[95]:
-
-
-
-
-
-# In[96]:
-
-
-
-
-
-# In[ ]:
-
-
-
 
