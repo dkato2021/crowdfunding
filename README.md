@@ -21,5 +21,6 @@
 
 ### 3. プログラムの実行
 ```
+wget -P ./data/ https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin 
 . ./run.sh
 ```
