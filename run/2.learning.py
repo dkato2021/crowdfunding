@@ -185,7 +185,7 @@ class MyLGBMModel:
                           verbose=False)  
                 model_name = f"{self.name}_SEED{seed}_FOLD{cv_num}_model.pkl"
                 #self.models[model_name] = model  # save model
-                pickle.dump(model, open(os.path.join(config.models, f'{model_name}'), 'wb'))#---------------------------!!!
+                pickle.dump(model, open(os.path.join(config.models, f'{model_name}'), 'wb'))
                 # predict - validation
                 pred = model.predict(va_x)
                 oof.append(pred)
