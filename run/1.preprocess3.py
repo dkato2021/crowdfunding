@@ -1,22 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-def seed_everything(seed=2021):
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-    #tf.random.set_seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-
-
-# In[2]:
-
-
 import os 
 import random
 import re
@@ -38,26 +19,19 @@ from category_encoders.cat_boost import CatBoostEncoder
 import xfeat
 import torch
 from mypipe.config import Config
-#seed_everything(seed=2021)
+
+def seed_everything(seed=2021):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    #tf.random.set_seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+
+seed_everything(seed=2021)
 RUN_NAME = "exp00"
 config = Config(RUN_NAME, folds=5)
-
-
-# In[3]:
-
-
-train = pd.read_csv(os.path.join(config.INPUT, "train.csv"))
-test = pd.read_csv(os.path.join(config.INPUT, "test.csv"))
-
-
-# In[6]:
-
-
-important_BERT= pd.read_csv(os.path.join(config.INPUT, "rough_fineBERT.csv")).iloc[:,[420,705,157,186,299]]
-
-
-# In[4]:
-
 
 ## raw features
 def goal2feature(input_df):
@@ -90,10 +64,6 @@ def get_bins(input_df):
                                     bins=[-1, 19999, 49999, 79999, 99999, np.inf],
                                     labels=['bins_g1', 'bins_g2', 'bins_g3', 'bins_g4', 'bins_g5'])
     return output_df.astype(str)
-
-
-# In[9]:
-
 
 ## cross features
 # カテゴリ変数×カテゴリ変数
@@ -167,10 +137,6 @@ def get_cross_num_features(input_df):
     output_df["prod_420_705"]  = _input_df["rough_fineBERT420"] * (_input_df["rough_fineBERT705"])
     return output_df
 
-
-# In[10]:
-
-
 ## count encoding and CBtarget encoding
 def get_ce_features(input_df):
     seed_everything(seed=2021)
@@ -200,10 +166,6 @@ def get_ce_features(input_df):
     
     output_df=pd.concat([output_df1,output_df2],axis=1)
     return output_df.copy()
-
-
-# In[5]:
-
 
 def aggregation(input_df):
     _input_df = pd.concat([
@@ -244,10 +206,6 @@ def aggregation(input_df):
                          output_df4[cols4], output_df5[cols5]], axis=1)
     return output_df.copy()
 
-
-# In[6]:
-
-
 # html_content 含めた特徴量作成
 def get_process_funcs():
     funcs = [
@@ -268,24 +226,16 @@ def to_feature(input_df, funcs):
 
     return output_df
 
-
-# In[14]:
-
+train = pd.read_csv(os.path.join(config.INPUT, "train.csv"))
+test = pd.read_csv(os.path.join(config.INPUT, "test.csv"))
+important_BERT= pd.read_csv(os.path.join(config.INPUT, "rough_fineBERT.csv")).iloc[:,[420,705,157,186,299]]
 
 ## preprocessing
 input_df = pd.concat([train, test]).reset_index(drop=True)  # このコンペではルール的に可能なので、楽するためにconcatして前処理
 input_df=pd.concat([input_df, important_BERT], axis=1)
 # all featrues
 process_funcs = get_process_funcs()
+
 output_df = to_feature(input_df, process_funcs)
-
-print(output_df.shape)
 output_df.to_csv(os.path.join(config.OUTPUT, "rprocessed_table.csv"), index=False, header=True)
-print('done')
-
-
-# In[ ]:
-
-
-
 
