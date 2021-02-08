@@ -1,53 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-def seed_everything(seed=2021):
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-
-
-# In[2]:
-
-
-def reduce_mem_usage(df, verbose=True):
-    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-    start_mem = df.memory_usage().sum() / 1024**2
-    for col in df.columns:
-        col_type = df[col].dtypes
-        if col_type in numerics:
-            c_min = df[col].min()
-            c_max = df[col].max()
-            if str(col_type)[:3] == 'int':
-                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
-                    df[col] = df[col].astype(np.int8)
-                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
-                    df[col] = df[col].astype(np.int16)
-                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
-                    df[col] = df[col].astype(np.int32)
-                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
-                    df[col] = df[col].astype(np.int64)
-            else:
-                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
-                    df[col] = df[col].astype(np.float16)
-                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
-                    df[col] = df[col].astype(np.float32)
-                else:
-                    df[col] = df[col].astype(np.float64)
-
-    end_mem = df.memory_usage().sum() / 1024**2
-    #print('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
-    #print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
-
-    return df
-
-
-# In[3]:
-
-
 import os 
 import re
 import random
@@ -81,23 +31,51 @@ from bs4 import BeautifulSoup
 from fasttext import load_model
 seed_everything(seed=2021)
 from mypipe.config import Config
+
+def seed_everything(seed=2021):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
 #seed_everything(seed=2021)
 RUN_NAME = "exp00"
 config = Config(RUN_NAME, folds=5)
 
+def reduce_mem_usage(df, verbose=True):
+    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+    start_mem = df.memory_usage().sum() / 1024**2
+    for col in df.columns:
+        col_type = df[col].dtypes
+        if col_type in numerics:
+            c_min = df[col].min()
+            c_max = df[col].max()
+            if str(col_type)[:3] == 'int':
+                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                    df[col] = df[col].astype(np.int8)
+                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
+                    df[col] = df[col].astype(np.int16)
+                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
+                    df[col] = df[col].astype(np.int32)
+                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
+                    df[col] = df[col].astype(np.int64)
+            else:
+                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
+                    df[col] = df[col].astype(np.float16)
+                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                    df[col] = df[col].astype(np.float32)
+                else:
+                    df[col] = df[col].astype(np.float64)
 
-# In[5]:
+    end_mem = df.memory_usage().sum() / 1024**2
+    #print('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
+    #print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
 
+    return df
 
 # fold ごとの index を返す関数を定義
 def make_skf(train_x, train_y, random_state=2021):
     skf = StratifiedKFold(n_splits=FOLDS, shuffle=True, random_state=random_state)
     folds_idx = [(t, v) for (t, v) in skf.split(train_x, train_y)]
     return folds_idx
-
-
-# In[6]:
-
 
 # visualize result
 def visualize_confusion_matrix(y_true,
@@ -123,10 +101,6 @@ def visualize_confusion_matrix(y_true,
     plt.show()
     return fig
 
-
-# In[7]:
-
-
 # 最適な閾値を求める関数
 def threshold_optimization(y_true, y_pred, metrics=None):
     seed_everything(seed=2021)
@@ -147,10 +121,6 @@ def optimized_f1(y_true, y_pred):
     score = f1_score(y_true, y_pred >= bt)
     return score
 
-
-# In[12]:
-
-
 def get_best(y_true, y_pred):
     def wight_opt(x):
         y_preds = np.average(list(y_pred.values()), axis=0, weights=x)
@@ -167,10 +137,6 @@ def get_best(y_true, y_pred):
     bt=threshold_optimization(y_true, np.average(list(y_pred.values()), axis=0, weights=best_weight), metrics=f1_score)
     f1 = optimized_f1(y_true, np.average(list(y_pred.values()), axis=0, weights=best_weight))
     return best_weight, bt, f1
-
-
-# In[8]:
-
 
 # LGBMModel の wrapper
 class MyLGBMModel:
@@ -218,16 +184,11 @@ class MyLGBMModel:
         score = self.metrics(y_true, y_pred)
         return score
 
-
-# In[10]:
-
-
 table = pd.read_csv(os.path.join(config.INPUT, "processed_table.csv"))
 basic = pd.read_csv(os.path.join(config.INPUT, "html_basic.csv"))
 SVD = pd.read_csv(os.path.join(config.INPUT, "svd128.csv"))
 fineBERT = pd.read_csv(os.path.join(config.INPUT, "rough_fineBERT.csv"))
 
-#"""
 df=reduce_mem_usage(pd.concat([
                               table, 
                               basic,
@@ -235,16 +196,11 @@ df=reduce_mem_usage(pd.concat([
                               fineBERT
                              ], axis=1))
 
-###
+
 train_y = pd.read_csv(os.path.join(config.INPUT, "train.csv"))['state']
 train_x, test_x = df[:len(train_y)], df[len(train_y):].reset_index(drop=True)
 
-
-# # modeling
-
-# In[17]:
-
-
+# ---------------------------------------------------------------------------------------------------------------------------------------- #
 NAME = "LightGBM001"
 FOLDS, seeds= 2, [0]
 omit = .8
@@ -270,18 +226,12 @@ model = MyLGBMModel(name=NAME, params=LBGM_params, fold=make_skf,
 
 # feature selections
 selected_cols = pd.read_csv(os.path.join(config.INPUT, f"{NAME}_selected_cols.csv"))
-
 model.train_x, model.test_x = model.train_x[selected_cols["0"]], model.test_x[selected_cols["0"]]
-
 
 # train & inference
 preds = {}
 preds[NAME]  = model.inference()  
-
-
-# In[18]:
-
-
+# ---------------------------------------------------------------------------------------------------------------------------------------- #
 NAME = "LightGBM002"
 # define model
 LBGM_params = {
@@ -302,18 +252,9 @@ model = MyLGBMModel(name=NAME, params=LBGM_params, fold=make_skf,
                     seeds=seeds
                    )
 selected_cols = pd.read_csv(os.path.join(config.INPUT, f"{NAME}_selected_cols.csv"))
-
 model.train_x, model.test_x = model.train_x[selected_cols["0"]], model.test_x[selected_cols["0"]]
-
-
-# train & inference
-
 preds[NAME]  = model.inference()  
-
-
-# In[19]:
-
-
+# ---------------------------------------------------------------------------------------------------------------------------------------- #
 NAME = "LightGBM003"
 
 # define model
@@ -337,24 +278,14 @@ model = MyLGBMModel(name=NAME, params=LBGM_params, fold=make_skf,
 selected_cols = pd.read_csv(os.path.join(config.INPUT, f"{NAME}_selected_cols.csv"))
 
 model.train_x, model.test_x = model.train_x[selected_cols["0"]], model.test_x[selected_cols["0"]]
-#'''
-
 # train & inference
-
 preds[NAME]  = model.inference()  
-
-
-# In[21]:
-
+# ---------------------------------------------------------------------------------------------------------------------------------------- #
 
 best=pd.read_csv(os.path.join(config.OUTPUT, f"{RUN_NAME}_best.csv"))
 weight=best.loc[[0,1,2],:]
 bt=best.loc[3,:]
 labels = np.average(list(preds.values()), axis=0, weights=np.array(weight).reshape(3,)) >= float(bt)
-
-
-# In[83]:
-
 
 sample_sub = pd.read_csv(os.path.join(config.INPUT , "sample_submit.csv"), header=None)
 
@@ -362,16 +293,5 @@ sub = sample_sub.copy()
 sub[1] = labels
 sub = sub.astype(int)
 sub.to_csv(os.path.join(config.SUBMISSION , f"sub_{RUN_NAME}.csv"), index=False, header=True)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
 
 
