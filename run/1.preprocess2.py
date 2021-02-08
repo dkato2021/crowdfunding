@@ -1,21 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-def seed_everything(seed=2021):
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-
-
-# In[2]:
-
-
 import os 
 from time import time
 import re
@@ -42,11 +24,11 @@ from nltk.corpus import stopwords
 #import nltk
 #nltk.download('stopwords')
 
-from collections import Counter#######################
+from collections import Counter
 #import smart_open
 import gensim
 from gensim import corpora, models
-from gensim.models import LdaModel, TfidfModel, LsiModel
+from gensim.models import TfidfModel
 from fasttext import load_model
 
 import torch
@@ -54,31 +36,22 @@ from transformers import BertTokenizer, BertForSequenceClassification
 
 from mypipe.config import Config
 
+def seed_everything(seed=2021):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+
 seed_everything(seed=2021)
 RUN_NAME = "exp00"
 config = Config(RUN_NAME, folds=5)
-
-
-# In[3]:
-
-
-train = pd.read_csv(os.path.join(config.INPUT, "train.csv"))
-test = pd.read_csv(os.path.join(config.INPUT, "test.csv"))
-
-
-# # 前処理
-
-# In[4]:
-
 
 stop_words = stopwords.words(['spanish', 'french', 'german'] )
 default_stopwords = texthero_stopwords.DEFAULT#english
 custom_stopwords = default_stopwords.union(stop_words)
 language=['english','spanish', 'french', 'german'] 
-
-
-# In[5]:
-
 
 # text cleansing 用の関数
 def hero_rough(input_df, text_col):
@@ -127,10 +100,6 @@ def hero_text(input_df, text_col):
         texts=hero.preprocessing.stem(texts,language=l)
     return texts
 # ------------------------------------------------------------ #
-
-
-# In[6]:
-
 
 # text の基本的な情報をgetする関数
 def get_basic(input_df, text_columns, hero=None, name=""):
@@ -190,10 +159,6 @@ def get_svd(input_df,
 # ------------------------------------------------------------ #
 # main の前処理関数たち
 
-
-# In[8]:
-
-
 # text 前処理なしの basic features
 def get_basicALL(input_df):
     output_df1 = get_basic(input_df=input_df,text_columns=["html_content"],
@@ -216,33 +181,13 @@ def get_svdALL(input_df):
     output_df=pd.concat([output_df1, output_df2],axis=1)
     return output_df
 
-
-# In[9]:
-
+train = pd.read_csv(os.path.join(config.INPUT, "train.csv"))
+test = pd.read_csv(os.path.join(config.INPUT, "test.csv"))
 
 input_df = pd.concat([train, test]).reset_index(drop=True)
-input_df=input_df[:45]
 
 output_df = get_svdALL(input_df)
-
 output_df.to_csv(os.path.join(config.OUTPUT, "svd128.csv"), index=False, header=True)
-
-
-# In[10]:
-
 
 output_df1 = get_basicALL(input_df)
 output_df1.to_csv(os.path.join(config.OUTPUT, "html_basic.csv"), index=False, header=True)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
