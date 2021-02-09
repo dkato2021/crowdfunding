@@ -22,11 +22,11 @@
 ### 3. 実行手順
 ```
 #パッケージのインストール
-pip install -r requirements.txt
+$ pip install -r requirements.txt
 
 #言語判定モデルのダウンロード
-wget -P ./data/ https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin 
+$ wget -P ./data/ https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin 
 
 #実行
-. ./run.sh
+$ . ./run.sh
 ```
