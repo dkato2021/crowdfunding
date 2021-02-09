@@ -8,15 +8,12 @@ warnings.filterwarnings("ignore")
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 import torch
 from torch import optim
 from torch.utils.data import TensorDataset, random_split
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
-from transformers import BertTokenizer, BertForSequenceClassification ,  get_linear_schedule_with_warmup
-from transformers import  RobertaModel, RobertaTokenizer
+from transformers import BertTokenizer, BertForSequenceClassification
 
 import texthero as hero
 from bs4 import BeautifulSoup
@@ -77,7 +74,7 @@ def get_langID(input_df):
     new_documents=[re.sub(r"\W", " ", document) for document in new_documents]
 
     #言語判定モデルの読み込み
-    lang_model = load_model("/home/dkato/fastText/lid.176.bin")
+    lang_model = load_model(os.path.join(config.INPUT, "lid.176.bin"))
 
     #言語判定結果の格納
     lang=[];lang+=[lang_model.predict(new_documents[i])[0] for i in range(len(input_df))]
@@ -92,7 +89,6 @@ def hero_rough(input_df, text_col):
     ## only remove html tags, do not remove punctuation
     custom_pipeline = [
         hero.preprocessing.fillna,
-        #hero.preprocessing.remove_html_tags,
         hero.preprocessing.lowercase,
         hero.preprocessing.remove_digits,
         hero.preprocessing.remove_punctuation,#
@@ -194,10 +190,6 @@ def get_multidataloader(texts, y_labels, tokenizer):
 def finetuning(dataloader, model, max_epoch = 1):
     seed_everything(seed=2021)  
     optimizer = optim.AdamW(model.parameters(), lr=2e-5, eps=1e-8) # Default epsilon value)
-    #total_steps = len(dataloader) * max_epoch
-    #scheduler = get_linear_schedule_with_warmup(optimizer, 
-    #                                num_warmup_steps = 0, # Default value in run_glue.py
-    #                                num_training_steps = total_steps)
     
     # 訓練パートの定義
     def train(model):
@@ -216,7 +208,6 @@ def finetuning(dataloader, model, max_epoch = 1):
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
-            #scheduler.step()
         model=model.to(device)
         return model
     
@@ -261,10 +252,7 @@ def get_engBERT(input_df,
         
         model.eval()
         with torch.no_grad(): 
-            #all_encoder_layers=[];all_encoder_layers += [model(torch.tensor([indexed_token]).to(device))for indexed_token in indexed_tokens]
             all_encoder_layers = list(map(lambda x: np.mean(model(torch.tensor([x]).to(device))[1][-2].detach().cpu().numpy()[0], axis=0), indexed_tokens))
-        #embedding = [all_encoder_layer[1][-2].cpu().numpy()[0] for all_encoder_layer in all_encoder_layers]
-        #t=list(map(lambda x: np.mean(x.cpu().numpy()[0], axis=0), all_encoder_layers))
         output_df=pd.DataFrame(all_encoder_layers, columns=[name+f'_fineBERT{i}'                                                             for i in range(len(all_encoder_layers[0]))])
             
     return output_df
@@ -302,11 +290,8 @@ def get_multiBERT(input_df,
         indexed_tokens =[indexed_token[:512] if len(indexed_token)>512 else indexed_token                                                                  for indexed_token in indexed_tokens ]
         model.eval()
         with torch.no_grad(): 
-            #all_encoder_layers=[];all_encoder_layers+= [model(torch.tensor([indexed_token]).to(device))for indexed_token in indexed_tokens]
-            #all_encoder_layers = list(map(lambda x: (model(torch.tensor([x]).to(device))[1][-2]), indexed_tokens))
             all_encoder_layers = list(map(lambda x: np.mean(model(torch.tensor([x]).to(device))[1][-2].detach().cpu().numpy()[0], axis=0), indexed_tokens))
-        #embedding = [all_encoder_layer[1][-2].cpu().numpy()[0] for all_encoder_layer in all_encoder_layers]
-        #t=list(map(lambda x: np.mean(x.cpu().numpy()[0], axis=0), all_encoder_layers))
+
         output_df=pd.DataFrame(all_encoder_layers, columns=[name+f'_fineBERT{i}'                                                             for i in range(len(all_encoder_layers[0]))])
             
     return output_df
