@@ -1,7 +1,6 @@
 import os 
 import re
 import random
-from time import time
 import pickle
 import warnings
 import sys
@@ -9,34 +8,24 @@ sys.path.append('../')
 warnings.filterwarnings("ignore")
 
 import pandas as pd
-pd.set_option('display.max_rows', 100)
-pd.set_option('display.max_columns', 100)
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from scipy.optimize import minimize
 
-from sklearn.metrics import f1_score, fbeta_score
+from sklearn.metrics import f1_score
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import StandardScaler
 
 from lightgbm import LGBMModel
-import lightgbm as lgb
-from catboost import CatBoostClassifier, Pool, FeaturesData
-import xgboost as xgb
 
-import re
 from bs4 import BeautifulSoup
 from fasttext import load_model
-seed_everything(seed=2021)
 from mypipe.config import Config
 
 def seed_everything(seed=2021):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
-#seed_everything(seed=2021)
+seed_everything(seed=2021)
 RUN_NAME = "exp00"
 config = Config(RUN_NAME, folds=5)
 
@@ -293,3 +282,5 @@ sub = sample_sub.copy()
 sub[1] = labels
 sub = sub.astype(int)
 sub.to_csv(os.path.join(config.SUBMISSION , f"sub_{RUN_NAME}.csv"), index=False, header=True)
+
+
