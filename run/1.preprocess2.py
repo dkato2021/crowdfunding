@@ -17,8 +17,8 @@ import texthero as hero
 from texthero import stopwords as texthero_stopwords
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
-#import nltk
-#nltk.download('stopwords')
+import nltk
+nltk.download('stopwords')
 
 from collections import Counter
 #import smart_open
