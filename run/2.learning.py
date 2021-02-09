@@ -1,7 +1,6 @@
 import os 
 import re
 import random
-from time import time
 import pickle
 import warnings
 import sys
@@ -9,26 +8,17 @@ sys.path.append('../')
 warnings.filterwarnings("ignore")
 
 import pandas as pd
-pd.set_option('display.max_rows', 100)
-pd.set_option('display.max_columns', 100)
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from scipy.optimize import minimize
 
-from sklearn.metrics import f1_score, fbeta_score
+from sklearn.metrics import f1_score
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import StandardScaler
 
 from lightgbm import LGBMModel
-import lightgbm as lgb
-from catboost import CatBoostClassifier, Pool, FeaturesData
-import xgboost as xgb
 
 #from hyperopt import hp, tpe, Trials, fmin
 
-import re
 from bs4 import BeautifulSoup
 from fasttext import load_model
 def seed_everything(seed=2021):
@@ -267,7 +257,7 @@ LBGM_params = {
     "reg_lambda": 3, #=lambda_l2
     
     "random_state": 2021,
-    "n_jobs": 8,
+    "n_jobs": 36,
     "importance_type": "gain",
     "objective": 'binary',
 }
@@ -305,7 +295,7 @@ LBGM_params = {
     "reg_lambda": 3, #=lambda_l2
     
     "random_state": 2021,
-    "n_jobs": 8,
+    "n_jobs": 36,
     "importance_type": "gain",
     "objective": 'binary',
 }
@@ -340,7 +330,7 @@ LBGM_params = {
     "reg_lambda": 3, #=lambda_l2
     
     "random_state": 2021,
-    "n_jobs": 8,
+    "n_jobs": 36,
     "importance_type": "gain",
     "objective": 'binary',
 }
