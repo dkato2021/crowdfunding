@@ -1,4 +1,4 @@
-## SIGNATE 22卒インターン選考コンペティション 15th place solution
+## SIGNATE 22卒インターン選考コンペ 15th place solution
 ### 1. 特徴量
   - html content
     - 前処理なし,textのみなどの前処理をして以下の特徴量を作成
