@@ -8,10 +8,8 @@ warnings.filterwarnings("ignore")
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-from sklearn.decomposition import TruncatedSVD, NMF, PCA
+from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 import category_encoders as ce
@@ -24,7 +22,6 @@ def seed_everything(seed=2021):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
-    #tf.random.set_seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
@@ -42,8 +39,6 @@ def goal2feature(input_df):
     output_df["goal_upper_flag"] = output_df["goal_min"] == 100000
     output_df["goal_lower_flag"] = output_df["goal_min"] == 1
     output_df["goal_mean"] = output_df[["goal_min", "goal_max"]].mean(axis=1)
-    #output_df["goal_q25"] = output_df[["goal_min", "goal_max"]].quantile(q=0.25, axis=1)
-    #output_df["goal_q75"] = output_df[["goal_min", "goal_max"]].quantile(q=0.75, axis=1)
     return output_df
 
 def get_numerical_feature(input_df):
@@ -237,5 +232,5 @@ input_df=pd.concat([input_df, important_BERT], axis=1)
 process_funcs = get_process_funcs()
 
 output_df = to_feature(input_df, process_funcs)
-output_df.to_csv(os.path.join(config.OUTPUT, "rprocessed_table.csv"), index=False, header=True)
+output_df.to_csv(os.path.join(config.OUTPUT, "processed_table.csv"), index=False, header=True)
 
