@@ -3,7 +3,6 @@ catboost==0.24.4
 category-encoders==2.2.2
 fasttext==0.9.2
 gensim==3.8.3
-Keras==2.4.3
 lightgbm==3.1.1
 nltk==3.5
 numpy==1.19.4
