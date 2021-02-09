@@ -1,5 +1,4 @@
 import os 
-from time import time
 import re
 import random
 import warnings
@@ -9,11 +8,8 @@ warnings.filterwarnings("ignore")
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-import umap
-from sklearn.decomposition import TruncatedSVD, NMF, PCA
+from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import confusion_matrix
 
@@ -58,7 +54,6 @@ def hero_rough(input_df, text_col):
     ## only remove html tags, do not remove punctuation
     custom_pipeline = [
         hero.preprocessing.fillna,
-        #hero.preprocessing.remove_html_tags,
         hero.preprocessing.lowercase,
         hero.preprocessing.remove_digits,
         hero.preprocessing.remove_punctuation,#
