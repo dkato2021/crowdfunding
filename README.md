@@ -27,6 +27,9 @@ $ pip install -r requirements.txt
 #言語判定モデルのダウンロード
 $ wget -P ./data/ https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin 
 
+# 学習、予測データのダウンロード
+$ . ./download.sh
+
 #実行
 $ . ./run.sh
 ```
