@@ -1,4 +1,5 @@
 ## SIGNATE 22卒インターン選考コンペ 15th place solution (最終更新日 2/10)
+- URL:https://signate.jp/competitions/412
 ### 1. 特徴量
   - html content
     - 前処理なし,textのみなどの前処理をして以下の特徴量を作成
