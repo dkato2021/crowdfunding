@@ -1,3 +1,4 @@
+result; public 14th/280
 ### 1. 特徴量
   - html content
     - 前処理なし,textのみなどの前処理をして以下の特徴量を作成
