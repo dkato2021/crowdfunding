@@ -28,7 +28,7 @@ $ pip install -r requirements.txt
 $ wget -P ./data/ https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin 
 
 # 学習、予測データのダウンロード
-$ signate download --competition-id=411 --path=./data
+$ 
 
 #実行
 $ . ./run.sh
